@@ -10,33 +10,115 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CalendarioRouteImport } from './routes/calendario'
+import { Route as ClassificheRouteImport } from './routes/classifiche'
+import { Route as DocumentiRouteImport } from './routes/documenti'
+import { Route as NewsRouteImport } from './routes/news'
+import { Route as TitoliRouteImport } from './routes/titoli'
+import { Route as EventiIdRouteImport } from './routes/eventi.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CalendarioRoute = CalendarioRouteImport.update({
+  id: '/calendario',
+  path: '/calendario',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClassificheRoute = ClassificheRouteImport.update({
+  id: '/classifiche',
+  path: '/classifiche',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocumentiRoute = DocumentiRouteImport.update({
+  id: '/documenti',
+  path: '/documenti',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsRoute = NewsRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TitoliRoute = TitoliRouteImport.update({
+  id: '/titoli',
+  path: '/titoli',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventiIdRoute = EventiIdRouteImport.update({
+  id: '/eventi/$id',
+  path: '/eventi/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/calendario': typeof CalendarioRoute
+  '/classifiche': typeof ClassificheRoute
+  '/documenti': typeof DocumentiRoute
+  '/news': typeof NewsRoute
+  '/titoli': typeof TitoliRoute
+  '/eventi/$id': typeof EventiIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/calendario': typeof CalendarioRoute
+  '/classifiche': typeof ClassificheRoute
+  '/documenti': typeof DocumentiRoute
+  '/news': typeof NewsRoute
+  '/titoli': typeof TitoliRoute
+  '/eventi/$id': typeof EventiIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/calendario': typeof CalendarioRoute
+  '/classifiche': typeof ClassificheRoute
+  '/documenti': typeof DocumentiRoute
+  '/news': typeof NewsRoute
+  '/titoli': typeof TitoliRoute
+  '/eventi/$id': typeof EventiIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/calendario'
+    | '/classifiche'
+    | '/documenti'
+    | '/news'
+    | '/titoli'
+    | '/eventi/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/calendario'
+    | '/classifiche'
+    | '/documenti'
+    | '/news'
+    | '/titoli'
+    | '/eventi/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/calendario'
+    | '/classifiche'
+    | '/documenti'
+    | '/news'
+    | '/titoli'
+    | '/eventi/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CalendarioRoute: typeof CalendarioRoute
+  ClassificheRoute: typeof ClassificheRoute
+  DocumentiRoute: typeof DocumentiRoute
+  NewsRoute: typeof NewsRoute
+  TitoliRoute: typeof TitoliRoute
+  EventiIdRoute: typeof EventiIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +130,59 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/calendario': {
+      id: '/calendario'
+      path: '/calendario'
+      fullPath: '/calendario'
+      preLoaderRoute: typeof CalendarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/classifiche': {
+      id: '/classifiche'
+      path: '/classifiche'
+      fullPath: '/classifiche'
+      preLoaderRoute: typeof ClassificheRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/documenti': {
+      id: '/documenti'
+      path: '/documenti'
+      fullPath: '/documenti'
+      preLoaderRoute: typeof DocumentiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/news': {
+      id: '/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof NewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/titoli': {
+      id: '/titoli'
+      path: '/titoli'
+      fullPath: '/titoli'
+      preLoaderRoute: typeof TitoliRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/eventi/$id': {
+      id: '/eventi/$id'
+      path: '/eventi/$id'
+      fullPath: '/eventi/$id'
+      preLoaderRoute: typeof EventiIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CalendarioRoute: CalendarioRoute,
+  ClassificheRoute: ClassificheRoute,
+  DocumentiRoute: DocumentiRoute,
+  NewsRoute: NewsRoute,
+  TitoliRoute: TitoliRoute,
+  EventiIdRoute: EventiIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
