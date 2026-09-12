@@ -441,6 +441,7 @@ function Select({
   value: string;
   onChange: (v: string) => void;
   options: readonly string[];
+  etichette?: Record<string, string>;
 }) {
   return (
     <label className="text-[12px] font-medium text-muted-foreground">
