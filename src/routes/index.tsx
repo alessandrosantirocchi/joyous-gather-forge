@@ -57,7 +57,7 @@ function Home() {
             Tabellone federale
           </div>
           <h1 className="mt-4 max-w-[20ch] font-display text-4xl font-semibold uppercase leading-none sm:text-5xl">
-            Il peso che conta, il nome sul ring
+            La piattaforma degli eventi sportivi
           </h1>
           <p className="mt-4 max-w-[42ch] text-pretty text-sm text-muted-foreground sm:text-base">
             Iscrivi gli atleti della tua società, segui il calendario gare e tieni d'occhio le
