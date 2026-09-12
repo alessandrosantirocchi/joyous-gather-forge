@@ -5,6 +5,7 @@ import {
   fetchAtleti,
   fetchConteggiIscritti,
   fetchEventi,
+  type Atleta,
   type Evento,
 } from "@/lib/queries";
 import { contoAllaRovescia, formatDataBreve, iniziali, DISCIPLINE } from "@/lib/format";
@@ -43,7 +44,7 @@ function Home() {
   const oggi = new Date().toISOString().slice(0, 10);
   const prossimi = eventi.filter((e) => e.data_evento >= oggi).slice(0, 3);
   const podio = atleti.filter((a) => a.disciplina === "Contatto Pieno").slice(0, 3);
-  const ordinePodio = [podio[1], podio[0], podio[2]].filter(Boolean);
+  const ordinePodio = [podio[1], podio[0], podio[2]].filter((a): a is Atleta => !!a);
   const filtrati =
     filtro === "Tutti" ? eventi.slice(0, 6) : eventi.filter((e) => e.disciplina === filtro);
 
