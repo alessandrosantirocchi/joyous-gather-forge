@@ -21,7 +21,9 @@ function AreaSocieta() {
   const { data: profilo } = useProfilo(user?.id);
   const { data: admin } = useIsAdmin(user?.id);
   const navigate = useNavigate();
-  const [tab, setTab] = useState<"atleti" | "iscrizioni" | "eventi">("atleti");
+  const [tab, setTab] = useState<
+    "atleti" | "iscrizioni" | "eventi" | "conferme"
+  >("atleti");
 
   async function esci() {
     await supabase.auth.signOut();
