@@ -86,6 +86,7 @@ function AreaSocieta() {
         {tab === "atleti" && <MieiAtleti userId={user!.id} />}
         {tab === "iscrizioni" && <MieIscrizioni userId={user!.id} />}
         {tab === "eventi" && admin && <GestioneEventi />}
+        {tab === "conferme" && admin && <ConfermaIscrizioni />}
       </div>
     </div>
   );
