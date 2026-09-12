@@ -9,4 +9,5 @@
 - [ ] Titoli, News, Documenti
 - [ ] Login/registrazione societa (email+password, Google)
 - [ ] Area societa: gestione atleti e iscrizioni agli eventi
+- [ ] Sfondo scuro stile FederKombat
 - [ ] Area admin: gestione eventi e conferma iscrizioni
