@@ -459,3 +459,140 @@ function Select({
     </label>
   );
 }
+
+function ConfermaIscrizioni() {
+  const queryClient = useQueryClient();
+  const [eventoId, setEventoId] = useState<string>("");
+
+  const { data: eventi = [] } = useQuery({
+    queryKey: ["eventi"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("eventi")
+        .select("id, nome, data_evento, luogo, stato")
+        .order("data_evento", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const eventoSelezionato = eventoId || (eventi[0] as any)?.id || "";
+
+  const { data: iscrizioni = [], isLoading } = useQuery({
+    queryKey: ["iscrizioni-admin", eventoSelezionato],
+    enabled: Boolean(eventoSelezionato),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("iscrizioni")
+        .select(
+          "id, stato, categoria_peso, disciplina, created_at, atleti(nome, cognome, nome_societa, peso_kg, disciplina)",
+        )
+        .eq("evento_id", eventoSelezionato)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const cambiaStato = useMutation({
+    mutationFn: async ({ id, stato }: { id: string; stato: string }) => {
+      const { error } = await supabase
+        .from("iscrizioni")
+        .update({ stato })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["iscrizioni-admin"] }),
+  });
+
+  const conteggi = {
+    totali: iscrizioni.length,
+    confermate: iscrizioni.filter((i: any) => i.stato === "confermata").length,
+    attesa: iscrizioni.filter((i: any) => i.stato === "in attesa").length,
+  };
+
+  return (
+    <div className="flex flex-col gap-5">
+      <Pannello className="flex flex-wrap items-end justify-between gap-4 p-5">
+        <div className="min-w-[260px] flex-1">
+          <Select
+            label="Evento"
+            value={eventoSelezionato}
+            onChange={setEventoId}
+            options={(eventi as any[]).map((e) => e.id)}
+            etichette={Object.fromEntries(
+              (eventi as any[]).map((e) => [
+                e.id,
+                `${e.nome} — ${formatDataBreve(e.data_evento)}`,
+              ]),
+            )}
+          />
+        </div>
+        <p className="text-[12px] text-muted-foreground">
+          {conteggi.totali} iscrizioni · {conteggi.confermate} confermate ·{" "}
+          {conteggi.attesa} in attesa
+        </p>
+      </Pannello>
+
+      <Pannello className="divide-y divide-border overflow-hidden">
+        {isLoading && <Vuoto testo="Caricamento…" />}
+        {!isLoading && iscrizioni.length === 0 && (
+          <Vuoto testo="Nessuna iscrizione per questo evento." />
+        )}
+        {(iscrizioni as any[]).map((i) => (
+          <div
+            key={i.id}
+            className="flex flex-wrap items-center justify-between gap-3 px-5 py-3"
+          >
+            <div>
+              <p className="text-sm font-medium">
+                {i.atleti?.cognome} {i.atleti?.nome}
+              </p>
+              <p className="text-[12px] text-muted-foreground">
+                {i.atleti?.nome_societa} ·{" "}
+                {i.disciplina || i.atleti?.disciplina}
+                {i.atleti?.peso_kg ? ` · ${i.atleti.peso_kg} kg` : ""}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                className={
+                  i.stato === "confermata"
+                    ? "rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-400"
+                    : i.stato === "respinta"
+                      ? "rounded-full bg-destructive/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-destructive"
+                      : "rounded-full bg-muted px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground"
+                }
+              >
+                {i.stato}
+              </span>
+              {i.stato !== "confermata" && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    cambiaStato.mutate({ id: i.id, stato: "confermata" })
+                  }
+                  className="rounded-[10px] bg-primary px-3 py-1.5 text-[12px] font-semibold text-primary-foreground"
+                >
+                  Conferma
+                </button>
+              )}
+              {i.stato !== "respinta" && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    cambiaStato.mutate({ id: i.id, stato: "respinta" })
+                  }
+                  className="rounded-[10px] border border-border px-3 py-1.5 text-[12px] font-medium hover:bg-muted"
+                >
+                  Respingi
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </Pannello>
+    </div>
+  );
+}
