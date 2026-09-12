@@ -60,7 +60,12 @@ function AreaSocieta() {
         {([
           ["atleti", "I miei atleti"],
           ["iscrizioni", "Iscrizioni"],
-          ...(admin ? ([["eventi", "Gestione eventi"]] as const) : []),
+          ...(admin
+            ? ([
+                ["eventi", "Gestione eventi"],
+                ["conferme", "Conferma iscrizioni"],
+              ] as const)
+            : []),
         ] as const).map(([k, label]) => (
           <button
             key={k}
