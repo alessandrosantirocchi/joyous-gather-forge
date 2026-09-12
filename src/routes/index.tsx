@@ -6,6 +6,7 @@ import {
   fetchConteggiIscritti,
   fetchEventi,
   type Atleta,
+  type Evento,
 } from "@/lib/queries";
 import { contoAllaRovescia, formatDataBreve, iniziali, DISCIPLINE } from "@/lib/format";
 import { SezioneTitolo, Pannello, Etichetta } from "@/components/ui-blocchi";
