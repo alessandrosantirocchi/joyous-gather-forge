@@ -10,16 +10,28 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CalendarioRouteImport } from './routes/calendario'
 import { Route as ClassificheRouteImport } from './routes/classifiche'
 import { Route as DocumentiRouteImport } from './routes/documenti'
 import { Route as NewsRouteImport } from './routes/news'
 import { Route as TitoliRouteImport } from './routes/titoli'
+import { Route as AuthenticatedAreaRouteImport } from './routes/_authenticated.area'
 import { Route as EventiIdRouteImport } from './routes/eventi.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CalendarioRoute = CalendarioRouteImport.update({
@@ -47,6 +59,11 @@ const TitoliRoute = TitoliRouteImport.update({
   path: '/titoli',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAreaRoute = AuthenticatedAreaRouteImport.update({
+  id: '/area',
+  path: '/area',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const EventiIdRoute = EventiIdRouteImport.update({
   id: '/eventi/$id',
   path: '/eventi/$id',
@@ -55,64 +72,80 @@ const EventiIdRoute = EventiIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
   '/classifiche': typeof ClassificheRoute
   '/documenti': typeof DocumentiRoute
   '/news': typeof NewsRoute
   '/titoli': typeof TitoliRoute
+  '/area': typeof AuthenticatedAreaRoute
   '/eventi/$id': typeof EventiIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
   '/classifiche': typeof ClassificheRoute
   '/documenti': typeof DocumentiRoute
   '/news': typeof NewsRoute
   '/titoli': typeof TitoliRoute
+  '/area': typeof AuthenticatedAreaRoute
   '/eventi/$id': typeof EventiIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
   '/classifiche': typeof ClassificheRoute
   '/documenti': typeof DocumentiRoute
   '/news': typeof NewsRoute
   '/titoli': typeof TitoliRoute
+  '/_authenticated/area': typeof AuthenticatedAreaRoute
   '/eventi/$id': typeof EventiIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/calendario'
     | '/classifiche'
     | '/documenti'
     | '/news'
     | '/titoli'
+    | '/area'
     | '/eventi/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/calendario'
     | '/classifiche'
     | '/documenti'
     | '/news'
     | '/titoli'
+    | '/area'
     | '/eventi/$id'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
+    | '/auth'
     | '/calendario'
     | '/classifiche'
     | '/documenti'
     | '/news'
     | '/titoli'
+    | '/_authenticated/area'
     | '/eventi/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AuthRoute: typeof AuthRoute
   CalendarioRoute: typeof CalendarioRoute
   ClassificheRoute: typeof ClassificheRoute
   DocumentiRoute: typeof DocumentiRoute
@@ -128,6 +161,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/calendario': {
@@ -165,6 +212,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TitoliRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/area': {
+      id: '/_authenticated/area'
+      path: '/area'
+      fullPath: '/area'
+      preLoaderRoute: typeof AuthenticatedAreaRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/eventi/$id': {
       id: '/eventi/$id'
       path: '/eventi/$id'
@@ -175,8 +229,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteChildren {
+  AuthenticatedAreaRoute: typeof AuthenticatedAreaRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAreaRoute: AuthenticatedAreaRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AuthRoute: AuthRoute,
   CalendarioRoute: CalendarioRoute,
   ClassificheRoute: ClassificheRoute,
   DocumentiRoute: DocumentiRoute,
