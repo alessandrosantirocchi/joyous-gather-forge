@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as AtletiRouteImport } from './routes/atleti'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CalendarioRouteImport } from './routes/calendario'
 import { Route as ClassificheRouteImport } from './routes/classifiche'
@@ -27,6 +28,11 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AtletiRoute = AtletiRouteImport.update({
+  id: '/atleti',
+  path: '/atleti',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -72,6 +78,7 @@ const EventiIdRoute = EventiIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/atleti': typeof AtletiRoute
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
   '/classifiche': typeof ClassificheRoute
@@ -83,6 +90,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/atleti': typeof AtletiRoute
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
   '/classifiche': typeof ClassificheRoute
@@ -96,6 +104,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/atleti': typeof AtletiRoute
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
   '/classifiche': typeof ClassificheRoute
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/atleti'
     | '/auth'
     | '/calendario'
     | '/classifiche'
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/atleti'
     | '/auth'
     | '/calendario'
     | '/classifiche'
@@ -132,6 +143,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/atleti'
     | '/auth'
     | '/calendario'
     | '/classifiche'
@@ -145,6 +157,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AtletiRoute: typeof AtletiRoute
   AuthRoute: typeof AuthRoute
   CalendarioRoute: typeof CalendarioRoute
   ClassificheRoute: typeof ClassificheRoute
@@ -168,6 +181,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/atleti': {
+      id: '/atleti'
+      path: '/atleti'
+      fullPath: '/atleti'
+      preLoaderRoute: typeof AtletiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -244,6 +264,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AtletiRoute: AtletiRoute,
   AuthRoute: AuthRoute,
   CalendarioRoute: CalendarioRoute,
   ClassificheRoute: ClassificheRoute,

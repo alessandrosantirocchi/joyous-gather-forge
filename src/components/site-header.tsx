@@ -6,6 +6,7 @@ import { useSession } from "@/lib/auth";
 const VOCI = [
   { to: "/calendario", label: "Calendario" },
   { to: "/classifiche", label: "Classifiche" },
+  { to: "/atleti", label: "Le mie iscrizioni" },
   { to: "/titoli", label: "Titoli" },
   { to: "/news", label: "News" },
   { to: "/documenti", label: "Documenti" },
