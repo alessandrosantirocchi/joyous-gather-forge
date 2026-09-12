@@ -436,6 +436,7 @@ function Select({
   value,
   onChange,
   options,
+  etichette,
 }: {
   label: string;
   value: string;
