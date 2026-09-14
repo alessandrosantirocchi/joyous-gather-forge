@@ -8,6 +8,13 @@
       "when": 1789399640634,
       "tag": "0000_add_orario_programma_eventi",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789399849967,
+      "tag": "0001_locandine_storage_and_column",
+      "breakpoints": true
     }
   ]
 }

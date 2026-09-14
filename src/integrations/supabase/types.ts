@@ -108,6 +108,7 @@ export type Database = {
           disciplina: string
           fine_iscrizioni: string
           id: string
+          locandina_path: string | null
           luogo: string
           nome: string
           orario: string | null
@@ -124,6 +125,7 @@ export type Database = {
           disciplina?: string
           fine_iscrizioni: string
           id?: string
+          locandina_path?: string | null
           luogo: string
           nome: string
           orario?: string | null
@@ -140,6 +142,7 @@ export type Database = {
           disciplina?: string
           fine_iscrizioni?: string
           id?: string
+          locandina_path?: string | null
           luogo?: string
           nome?: string
           orario?: string | null
