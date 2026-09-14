@@ -288,6 +288,8 @@ function GestioneEventi() {
         sede: form.sede || null,
         fine_iscrizioni: form.fine_iscrizioni,
         descrizione: form.descrizione || null,
+        orario: form.orario || null,
+        programma: form.programma || null,
         stato: "aperto",
       });
       if (error) throw error;
@@ -304,6 +306,8 @@ function GestioneEventi() {
         sede: "",
         fine_iscrizioni: "",
         descrizione: "",
+        orario: "",
+        programma: "",
       });
     },
     onError: (e: any) => setMsg(e.message ?? "Errore."),
@@ -332,6 +336,17 @@ function GestioneEventi() {
           <Input label="Luogo (città)" value={form.luogo} onChange={(v) => setForm({ ...form, luogo: v })} required />
           <Input label="Sede / palazzetto" value={form.sede} onChange={(v) => setForm({ ...form, sede: v })} />
           <Input label="Fine iscrizioni (data-ora)" type="datetime-local" value={form.fine_iscrizioni} onChange={(v) => setForm({ ...form, fine_iscrizioni: v })} required />
+          <Input label="Orario (es. Apertura 9:00 · Gare 10:30)" value={form.orario} onChange={(v) => setForm({ ...form, orario: v })} />
+          <label className="text-[12px] font-medium text-muted-foreground">
+            Programma della giornata (una voce per riga)
+            <textarea
+              value={form.programma}
+              onChange={(e) => setForm({ ...form, programma: e.target.value })}
+              className="mt-1 w-full rounded-[10px] border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+              rows={4}
+              placeholder={"08:30 Accredito\n10:00 Inizio incontri"}
+            />
+          </label>
           <label className="text-[12px] font-medium text-muted-foreground">
             Descrizione
             <textarea
