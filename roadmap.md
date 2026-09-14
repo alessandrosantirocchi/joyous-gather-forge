@@ -15,3 +15,4 @@
 - [ ] Evento di prova con iscritti e conferme, verifica su Le mie iscrizioni
 - [ ] Calendario con eventi reali FIGHT1 Lazio 2026/27 (rimuovere eventi inventati)
 - [ ] Caricamento locandina per evento (admin) e visualizzazione pubblica
+- [ ] Locandina Fighting Spirit New Warriors in evidenza in homepage
