@@ -6,6 +6,7 @@ import { fetchEvento, fetchIscrittiEvento, type Atleta } from "@/lib/queries";
 import { contoAllaRovescia, formatDataCompleta } from "@/lib/format";
 import { Pannello, Vuoto, Etichetta } from "@/components/ui-blocchi";
 import { useSession } from "@/lib/auth";
+import { useLocandina } from "@/lib/locandine";
 
 export const Route = createFileRoute("/eventi/$id")({
   head: () => ({
