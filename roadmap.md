@@ -13,3 +13,4 @@
 - [x] Area admin: gestione eventi e conferma iscrizioni
 - [ ] Pagina evento pubblica: orario, programma, form iscrizione sincronizzato
 - [ ] Evento di prova con iscritti e conferme, verifica su Le mie iscrizioni
+- [ ] Calendario con eventi reali FIGHT1 Lazio 2026/27 (rimuovere eventi inventati)
