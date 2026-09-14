@@ -11,3 +11,5 @@
 - [x] Area societa: gestione atleti e iscrizioni agli eventi
 - [x] Sfondo scuro stile FederKombat
 - [x] Area admin: gestione eventi e conferma iscrizioni
+- [ ] Pagina evento pubblica: orario, programma, form iscrizione sincronizzato
+- [ ] Evento di prova con iscritti e conferme, verifica su Le mie iscrizioni
