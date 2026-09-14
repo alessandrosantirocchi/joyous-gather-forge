@@ -9,6 +9,7 @@ import {
   type Evento,
 } from "@/lib/queries";
 import { contoAllaRovescia, formatDataBreve, iniziali, DISCIPLINE } from "@/lib/format";
+import { useLocandina } from "@/lib/locandine";
 import { SezioneTitolo, Pannello, Etichetta } from "@/components/ui-blocchi";
 import { FiltriDisciplina, TabellaEventi } from "@/components/tabella-eventi";
 
@@ -138,6 +139,8 @@ function Home() {
           </Link>
         </Pannello>
       </section>
+
+      {prossimi[0] && <LocandinaInEvidenza evento={prossimi[0]} />}
 
       <section className="py-8">
         <SezioneTitolo
