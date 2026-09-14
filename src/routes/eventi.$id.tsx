@@ -116,6 +116,10 @@ function SchedaEvento() {
               <dd className="mt-1 font-display text-xl">{formatDataCompleta(evento.data_evento)}</dd>
             </div>
             <div>
+              <dt className="text-[11px] uppercase tracking-wide text-muted-foreground">Orario</dt>
+              <dd className="mt-1 text-sm">{evento.orario ?? "Da definire"}</dd>
+            </div>
+            <div>
               <dt className="text-[11px] uppercase tracking-wide text-muted-foreground">Luogo</dt>
               <dd className="mt-1 text-sm">
                 {evento.sede}
@@ -136,6 +140,25 @@ function SchedaEvento() {
               <dd className="mt-1 font-display text-xl">{iscritti.length}</dd>
             </div>
           </dl>
+
+          {evento.programma && (
+            <>
+              <h2 className="mt-8 mb-3 font-display text-xl font-semibold uppercase tracking-wide">
+                Programma della giornata
+              </h2>
+              <Pannello className="divide-y divide-border overflow-hidden">
+                {evento.programma
+                  .split("\n")
+                  .map((r) => r.trim())
+                  .filter(Boolean)
+                  .map((riga, idx) => (
+                    <p key={idx} className="px-5 py-3 text-sm">
+                      {riga}
+                    </p>
+                  ))}
+              </Pannello>
+            </>
+          )}
 
           <h2 className="mt-8 mb-3 font-display text-xl font-semibold uppercase tracking-wide">
             Atleti iscritti
