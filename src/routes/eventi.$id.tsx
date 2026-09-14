@@ -116,6 +116,10 @@ function SchedaEvento() {
               <dd className="mt-1 font-display text-xl">{formatDataCompleta(evento.data_evento)}</dd>
             </div>
             <div>
+              <dt className="text-[11px] uppercase tracking-wide text-muted-foreground">Orario</dt>
+              <dd className="mt-1 text-sm">{evento.orario ?? "Da definire"}</dd>
+            </div>
+            <div>
               <dt className="text-[11px] uppercase tracking-wide text-muted-foreground">Luogo</dt>
               <dd className="mt-1 text-sm">
                 {evento.sede}
