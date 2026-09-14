@@ -110,6 +110,8 @@ export type Database = {
           id: string
           luogo: string
           nome: string
+          orario: string | null
+          programma: string | null
           regione: string | null
           sede: string | null
           stato: string
@@ -124,6 +126,8 @@ export type Database = {
           id?: string
           luogo: string
           nome: string
+          orario?: string | null
+          programma?: string | null
           regione?: string | null
           sede?: string | null
           stato?: string
@@ -138,6 +142,8 @@ export type Database = {
           id?: string
           luogo?: string
           nome?: string
+          orario?: string | null
+          programma?: string | null
           regione?: string | null
           sede?: string | null
           stato?: string
