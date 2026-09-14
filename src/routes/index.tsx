@@ -9,6 +9,7 @@ import {
   type Evento,
 } from "@/lib/queries";
 import { contoAllaRovescia, formatDataBreve, iniziali, DISCIPLINE } from "@/lib/format";
+import { useLocandina } from "@/lib/locandine";
 import { SezioneTitolo, Pannello, Etichetta } from "@/components/ui-blocchi";
 import { FiltriDisciplina, TabellaEventi } from "@/components/tabella-eventi";
 
@@ -139,6 +140,8 @@ function Home() {
         </Pannello>
       </section>
 
+      {prossimi[0] && <LocandinaInEvidenza evento={prossimi[0]} />}
+
       <section className="py-8">
         <SezioneTitolo
           titolo="Prossimi eventi"
@@ -213,5 +216,42 @@ function CardEvento({ evento, iscritti }: { evento: Evento; iscritti: number }) 
         Dettagli e iscrizione
       </Link>
     </article>
+  );
+}
+
+function LocandinaInEvidenza({ evento }: { evento: Evento }) {
+  const { data: url } = useLocandina(evento.locandina_path);
+  if (!url) return null;
+  return (
+    <section className="py-8">
+      <Pannello className="grid gap-6 p-5 sm:p-6 lg:grid-cols-12">
+        <div className="lg:col-span-5">
+          <img
+            src={url}
+            alt={`Locandina ufficiale dell'evento ${evento.nome}`}
+            className="w-full rounded-xl ring-1 ring-border"
+            loading="eager"
+          />
+        </div>
+        <div className="flex flex-col justify-center lg:col-span-7">
+          <Etichetta>Prossimo evento</Etichetta>
+          <h2 className="mt-2 font-display text-3xl font-semibold uppercase leading-none sm:text-4xl">
+            {evento.nome}
+          </h2>
+          <p className="mt-3 text-sm text-muted-foreground">
+            {formatDataBreve(evento.data_evento)} · {evento.sede ? `${evento.sede} · ` : ""}
+            {evento.luogo}
+          </p>
+          {evento.orario && <p className="mt-1 text-sm text-muted-foreground">{evento.orario}</p>}
+          <Link
+            to="/eventi/$id"
+            params={{ id: evento.id }}
+            className="mt-5 inline-flex w-fit items-center justify-center rounded-[10px] bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            Dettagli e iscrizione
+          </Link>
+        </div>
+      </Pannello>
+    </section>
   );
 }

@@ -14,6 +14,7 @@ export type Evento = {
   stato: string;
   orario: string | null;
   programma: string | null;
+  locandina_path: string | null;
 };
 
 export type Atleta = {
