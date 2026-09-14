@@ -272,6 +272,8 @@ function GestioneEventi() {
     sede: "",
     fine_iscrizioni: "",
     descrizione: "",
+    orario: "",
+    programma: "",
   });
   const [msg, setMsg] = useState<string | null>(null);
 

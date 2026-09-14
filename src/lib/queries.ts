@@ -12,6 +12,8 @@ export type Evento = {
   fine_iscrizioni: string;
   descrizione: string | null;
   stato: string;
+  orario: string | null;
+  programma: string | null;
 };
 
 export type Atleta = {
