@@ -25,7 +25,7 @@ function AreaSocieta() {
   const { data: admin } = useIsAdmin(user?.id);
   const navigate = useNavigate();
   const [tab, setTab] = useState<
-    "atleti" | "iscrizioni" | "eventi" | "conferme"
+    "atleti" | "iscrizioni" | "eventi" | "conferme" | "utenti"
   >("atleti");
 
   async function esci() {
@@ -67,6 +67,7 @@ function AreaSocieta() {
             ? ([
                 ["eventi", "Gestione eventi"],
                 ["conferme", "Conferma iscrizioni"],
+                ["utenti", "Utenti e ruoli"],
               ] as const)
             : []),
         ] as const).map(([k, label]) => (
@@ -90,6 +91,7 @@ function AreaSocieta() {
         {tab === "iscrizioni" && <MieIscrizioni userId={user!.id} />}
         {tab === "eventi" && admin && <GestioneEventi />}
         {tab === "conferme" && admin && <ConfermaIscrizioni />}
+        {tab === "utenti" && admin && <GestioneUtenti mioId={user!.id} />}
       </div>
     </div>
   );
