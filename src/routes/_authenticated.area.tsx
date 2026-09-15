@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin, useProfilo, useSession } from "@/lib/auth";
 import { formatDataBreve, formatDataCompleta, DISCIPLINE } from "@/lib/format";
 import { Pannello, Vuoto } from "@/components/ui-blocchi";
+import { BUCKET_LOCANDINE, useLocandina } from "@/lib/locandine";
+import { listaUtenti, creaUtente, impostaRuolo } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/area")({
   head: () => ({
