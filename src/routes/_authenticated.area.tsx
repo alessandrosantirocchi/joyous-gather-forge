@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin, useProfilo, useSession } from "@/lib/auth";
 import { formatDataBreve, formatDataCompleta, DISCIPLINE } from "@/lib/format";
 import { Pannello, Vuoto } from "@/components/ui-blocchi";
+import { BUCKET_LOCANDINE, useLocandina } from "@/lib/locandine";
+import { listaUtenti, creaUtente, impostaRuolo } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/area")({
   head: () => ({
@@ -22,7 +25,7 @@ function AreaSocieta() {
   const { data: admin } = useIsAdmin(user?.id);
   const navigate = useNavigate();
   const [tab, setTab] = useState<
-    "atleti" | "iscrizioni" | "eventi" | "conferme"
+    "atleti" | "iscrizioni" | "eventi" | "conferme" | "utenti"
   >("atleti");
 
   async function esci() {
@@ -56,7 +59,7 @@ function AreaSocieta() {
         </button>
       </div>
 
-      <div className="mt-6 flex gap-2">
+      <div className="mt-6 flex flex-wrap gap-2">
         {([
           ["atleti", "I miei atleti"],
           ["iscrizioni", "Iscrizioni"],
@@ -64,6 +67,7 @@ function AreaSocieta() {
             ? ([
                 ["eventi", "Gestione eventi"],
                 ["conferme", "Conferma iscrizioni"],
+                ["utenti", "Utenti e ruoli"],
               ] as const)
             : []),
         ] as const).map(([k, label]) => (
@@ -87,6 +91,7 @@ function AreaSocieta() {
         {tab === "iscrizioni" && <MieIscrizioni userId={user!.id} />}
         {tab === "eventi" && admin && <GestioneEventi />}
         {tab === "conferme" && admin && <ConfermaIscrizioni />}
+        {tab === "utenti" && admin && <GestioneUtenti mioId={user!.id} />}
       </div>
     </div>
   );
@@ -379,7 +384,7 @@ function ListaEventiAdmin() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("eventi")
-        .select("id, nome, data_evento, luogo, stato")
+        .select("id, nome, data_evento, luogo, stato, locandina_path")
         .order("data_evento", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -400,23 +405,225 @@ function ListaEventiAdmin() {
         {isLoading && <Vuoto testo="Caricamento…" />}
         {!isLoading && eventi.length === 0 && <Vuoto testo="Nessun evento." />}
         {eventi.map((e: any) => (
-          <div key={e.id} className="flex items-center justify-between gap-3 px-5 py-3">
-            <div>
-              <p className="text-sm font-medium">{e.nome}</p>
-              <p className="text-[12px] text-muted-foreground">
-                {formatDataBreve(e.data_evento)} · {e.luogo}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => elimina.mutate(e.id)}
-              className="text-[12px] text-destructive hover:underline"
-            >
-              Elimina
-            </button>
-          </div>
+          <RigaEventoAdmin key={e.id} evento={e} onElimina={() => elimina.mutate(e.id)} />
         ))}
       </Pannello>
+    </div>
+  );
+}
+
+function RigaEventoAdmin({
+  evento,
+  onElimina,
+}: {
+  evento: any;
+  onElimina: () => void;
+}) {
+  const queryClient = useQueryClient();
+  const { data: anteprima } = useLocandina(evento.locandina_path);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const carica = useMutation({
+    mutationFn: async (file: File) => {
+      const est = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${evento.id}-${Date.now()}.${est}`;
+      const { error } = await supabase.storage
+        .from(BUCKET_LOCANDINE)
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (error) throw error;
+      const { error: e2 } = await supabase
+        .from("eventi")
+        .update({ locandina_path: path })
+        .eq("id", evento.id);
+      if (e2) throw e2;
+    },
+    onSuccess: () => {
+      setMsg("Locandina caricata.");
+      queryClient.invalidateQueries({ queryKey: ["eventi"] });
+      queryClient.invalidateQueries({ queryKey: ["locandina"] });
+      queryClient.invalidateQueries({ queryKey: ["evento"] });
+    },
+    onError: (e: any) => setMsg(e.message ?? "Caricamento non riuscito."),
+  });
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+      <div className="flex items-center gap-3">
+        {anteprima ? (
+          <img
+            src={anteprima}
+            alt={`Locandina ${evento.nome}`}
+            className="h-14 w-10 rounded-[6px] border border-border object-cover"
+          />
+        ) : (
+          <div className="grid h-14 w-10 place-items-center rounded-[6px] border border-dashed border-border text-[10px] text-muted-foreground">
+            —
+          </div>
+        )}
+        <div>
+          <p className="text-sm font-medium">{evento.nome}</p>
+          <p className="text-[12px] text-muted-foreground">
+            {formatDataBreve(evento.data_evento)} · {evento.luogo}
+          </p>
+          {msg && <p className="text-[11px] text-muted-foreground">{msg}</p>}
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <label className="cursor-pointer rounded-[10px] border border-border px-3 py-1.5 text-[12px] font-medium hover:bg-muted">
+          {carica.isPending ? "Caricamento…" : evento.locandina_path ? "Cambia locandina" : "Carica locandina"}
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(ev) => {
+              const file = ev.target.files?.[0];
+              setMsg(null);
+              if (file) carica.mutate(file);
+              ev.target.value = "";
+            }}
+          />
+        </label>
+        <button
+          type="button"
+          onClick={onElimina}
+          className="text-[12px] text-destructive hover:underline"
+        >
+          Elimina
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function GestioneUtenti({ mioId }: { mioId: string }) {
+  const queryClient = useQueryClient();
+  const carica = useServerFn(listaUtenti);
+  const crea = useServerFn(creaUtente);
+  const ruolo = useServerFn(impostaRuolo);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    nome_societa: "",
+    codice_societa: "",
+    citta: "",
+    ruolo: "societa",
+  });
+
+  const { data: utenti = [], isLoading, error } = useQuery({
+    queryKey: ["admin-utenti"],
+    queryFn: () => carica(),
+  });
+
+  const nuovo = useMutation({
+    mutationFn: () =>
+      crea({
+        data: {
+          email: form.email,
+          password: form.password,
+          nome_societa: form.nome_societa,
+          codice_societa: form.codice_societa,
+          citta: form.citta,
+          ruolo: form.ruolo as "societa" | "admin",
+        },
+      }),
+    onSuccess: () => {
+      setMsg("Account creato.");
+      setForm({ email: "", password: "", nome_societa: "", codice_societa: "", citta: "", ruolo: "societa" });
+      queryClient.invalidateQueries({ queryKey: ["admin-utenti"] });
+    },
+    onError: (e: any) => setMsg(e?.message ?? "Creazione non riuscita."),
+  });
+
+  const cambiaRuolo = useMutation({
+    mutationFn: (vars: { user_id: string; ruolo: "societa" | "admin"; attivo: boolean }) =>
+      ruolo({ data: vars }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-utenti"] }),
+    onError: (e: any) => setMsg(e?.message ?? "Modifica ruolo non riuscita."),
+  });
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-12">
+      <Pannello className="p-5 lg:col-span-5">
+        <h2 className="font-display text-lg font-semibold uppercase tracking-wide">
+          Nuovo account società
+        </h2>
+        <form
+          className="mt-4 flex flex-col gap-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setMsg(null);
+            nuovo.mutate();
+          }}
+        >
+          <Input label="Email" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} required />
+          <Input label="Password (min. 8 caratteri)" type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} required />
+          <Input label="Nome società" value={form.nome_societa} onChange={(v) => setForm({ ...form, nome_societa: v })} required />
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Codice società" value={form.codice_societa} onChange={(v) => setForm({ ...form, codice_societa: v })} />
+            <Input label="Città" value={form.citta} onChange={(v) => setForm({ ...form, citta: v })} />
+          </div>
+          <Select
+            label="Ruolo"
+            value={form.ruolo}
+            onChange={(v) => setForm({ ...form, ruolo: v })}
+            options={["societa", "admin"]}
+            etichette={{ societa: "Società", admin: "Amministratore" }}
+          />
+          <button
+            type="submit"
+            disabled={nuovo.isPending}
+            className="rounded-[10px] bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+          >
+            {nuovo.isPending ? "Creazione…" : "Crea account"}
+          </button>
+          {msg && <p className="text-[12px]">{msg}</p>}
+        </form>
+      </Pannello>
+
+      <div className="lg:col-span-7">
+        <Pannello className="divide-y divide-border overflow-hidden">
+          {isLoading && <Vuoto testo="Caricamento…" />}
+          {error && <Vuoto testo="Non è stato possibile caricare gli utenti." />}
+          {!isLoading && !error && utenti.length === 0 && <Vuoto testo="Nessun utente." />}
+          {(utenti as any[]).map((u) => {
+            const isAdmin = u.ruoli.includes("admin");
+            return (
+              <div key={u.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+                <div>
+                  <p className="text-sm font-medium">{u.nome_societa || u.email}</p>
+                  <p className="text-[12px] text-muted-foreground">
+                    {u.email}
+                    {u.citta ? ` · ${u.citta}` : ""}
+                    {u.codice_societa ? ` · ${u.codice_societa}` : ""}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={
+                      isAdmin
+                        ? "rounded-full bg-oro/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-oro"
+                        : "rounded-full bg-muted px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground"
+                    }
+                  >
+                    {isAdmin ? "Amministratore" : "Società"}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={cambiaRuolo.isPending || (isAdmin && u.id === mioId)}
+                    onClick={() =>
+                      cambiaRuolo.mutate({ user_id: u.id, ruolo: "admin", attivo: !isAdmin })
+                    }
+                    className="rounded-[10px] border border-border px-3 py-1.5 text-[12px] font-medium hover:bg-muted disabled:opacity-40"
+                  >
+                    {isAdmin ? "Rimuovi admin" : "Rendi admin"}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </Pannello>
+      </div>
     </div>
   );
 }

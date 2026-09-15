@@ -183,6 +183,7 @@ function SchedaEvento() {
         </div>
 
         <div className="lg:col-span-5">
+          <LocandinaEvento path={evento.locandina_path} nome={evento.nome} />
           <Pannello className="p-5">
             <h2 className="font-display text-xl font-semibold uppercase tracking-wide">
               Iscrivi un atleta
