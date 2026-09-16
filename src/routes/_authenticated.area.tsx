@@ -96,11 +96,11 @@ function AreaSocieta() {
       </div>
 
       <div className="mt-6">
-        {tab === "atleti" && <MieiAtleti userId={user!.id} />}
-        {tab === "iscrizioni" && <MieIscrizioni userId={user!.id} />}
+        {tab === "atleti" && <MieiAtleti userId={user.id} />}
+        {tab === "iscrizioni" && <MieIscrizioni userId={user.id} />}
         {tab === "eventi" && admin && <GestioneEventi />}
         {tab === "conferme" && admin && <ConfermaIscrizioni />}
-        {tab === "utenti" && admin && <GestioneUtenti mioId={user!.id} />}
+        {tab === "utenti" && admin && <GestioneUtenti mioId={user.id} />}
       </div>
     </div>
   );
