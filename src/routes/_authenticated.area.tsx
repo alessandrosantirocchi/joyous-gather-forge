@@ -608,12 +608,20 @@ function RigaEventoAdmin({
         </label>
         <button
           type="button"
+          onClick={() => setModifica((v) => !v)}
+          className="text-[12px] font-medium hover:underline"
+        >
+          {modifica ? "Chiudi" : "Modifica"}
+        </button>
+        <button
+          type="button"
           onClick={onElimina}
           className="text-[12px] text-destructive hover:underline"
         >
           Elimina
         </button>
       </div>
+      {modifica && <ModificaEvento evento={evento} onChiudi={() => setModifica(false)} />}
     </div>
   );
 }
