@@ -33,6 +33,15 @@ function AreaSocieta() {
     navigate({ to: "/", replace: true });
   }
 
+  if (!user) {
+    return (
+      <div className="mx-auto max-w-[1100px] px-5 py-16 text-sm text-muted-foreground">
+        Caricamento area riservata…
+      </div>
+    );
+  }
+
+
   return (
     <div className="mx-auto max-w-[1100px] px-5 py-10">
       <div className="flex flex-wrap items-end justify-between gap-3">
