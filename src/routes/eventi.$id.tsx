@@ -261,3 +261,18 @@ function SchedaEvento() {
     </div>
   );
 }
+
+function LocandinaEvento({ path, nome }: { path: string | null; nome: string }) {
+  const { data: url } = useLocandina(path);
+  if (!path || !url) return null;
+  return (
+    <Pannello className="mb-6 overflow-hidden">
+      <img
+        src={url}
+        alt={`Locandina ufficiale dell'evento ${nome}`}
+        loading="lazy"
+        className="w-full object-cover"
+      />
+    </Pannello>
+  );
+}
