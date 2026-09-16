@@ -393,7 +393,7 @@ function ListaEventiAdmin() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("eventi")
-        .select("id, nome, data_evento, luogo, stato, locandina_path")
+        .select("*")
         .order("data_evento", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -402,10 +402,14 @@ function ListaEventiAdmin() {
 
   const elimina = useMutation({
     mutationFn: async (id: string) => {
+      await supabase.from("iscrizioni").delete().eq("evento_id", id);
       const { error } = await supabase.from("eventi").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["eventi"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["eventi"] });
+      queryClient.invalidateQueries({ queryKey: ["iscrizioni"] });
+    },
   });
 
   return (
@@ -414,10 +418,120 @@ function ListaEventiAdmin() {
         {isLoading && <Vuoto testo="Caricamento…" />}
         {!isLoading && eventi.length === 0 && <Vuoto testo="Nessun evento." />}
         {eventi.map((e: any) => (
-          <RigaEventoAdmin key={e.id} evento={e} onElimina={() => elimina.mutate(e.id)} />
+          <RigaEventoAdmin
+            key={e.id}
+            evento={e}
+            onElimina={() => {
+              if (confirm(`Eliminare l'evento "${e.nome}" e le relative iscrizioni?`)) {
+                elimina.mutate(e.id);
+              }
+            }}
+          />
         ))}
       </Pannello>
     </div>
+  );
+}
+
+function ModificaEvento({ evento, onChiudi }: { evento: any; onChiudi: () => void }) {
+  const queryClient = useQueryClient();
+  const [f, setF] = useState({
+    nome: evento.nome ?? "",
+    disciplina: evento.disciplina ?? "Contatto Pieno",
+    tipo: evento.tipo ?? "Istituzionale",
+    data_evento: evento.data_evento ?? "",
+    luogo: evento.luogo ?? "",
+    sede: evento.sede ?? "",
+    fine_iscrizioni: (evento.fine_iscrizioni ?? "").slice(0, 16),
+    orario: evento.orario ?? "",
+    programma: evento.programma ?? "",
+    descrizione: evento.descrizione ?? "",
+    stato: evento.stato ?? "aperto",
+  });
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const salva = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("eventi")
+        .update({
+          nome: f.nome,
+          disciplina: f.disciplina,
+          tipo: f.tipo,
+          data_evento: f.data_evento,
+          luogo: f.luogo,
+          sede: f.sede || null,
+          fine_iscrizioni: new Date(f.fine_iscrizioni).toISOString(),
+          orario: f.orario || null,
+          programma: f.programma || null,
+          descrizione: f.descrizione || null,
+          stato: f.stato,
+        })
+        .eq("id", evento.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["eventi"] });
+      queryClient.invalidateQueries({ queryKey: ["evento"] });
+      onChiudi();
+    },
+    onError: (e: any) => setMsg(e.message ?? "Errore."),
+  });
+
+  return (
+    <form
+      className="mt-3 flex w-full flex-col gap-3 rounded-[12px] border border-border bg-muted/30 p-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        setMsg(null);
+        salva.mutate();
+      }}
+    >
+      <Input label="Nome evento" value={f.nome} onChange={(v) => setF({ ...f, nome: v })} required />
+      <div className="grid grid-cols-2 gap-3">
+        <Select label="Disciplina" value={f.disciplina} onChange={(v) => setF({ ...f, disciplina: v })} options={DISCIPLINE} />
+        <Select label="Tipo" value={f.tipo} onChange={(v) => setF({ ...f, tipo: v })} options={["Istituzionale", "Non Istituzionale"]} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Input label="Data evento" type="date" value={f.data_evento} onChange={(v) => setF({ ...f, data_evento: v })} required />
+        <Select label="Stato" value={f.stato} onChange={(v) => setF({ ...f, stato: v })} options={["aperto", "chiuso"]} />
+      </div>
+      <Input label="Luogo (città)" value={f.luogo} onChange={(v) => setF({ ...f, luogo: v })} required />
+      <Input label="Sede / palazzetto" value={f.sede} onChange={(v) => setF({ ...f, sede: v })} />
+      <Input label="Fine iscrizioni" type="datetime-local" value={f.fine_iscrizioni} onChange={(v) => setF({ ...f, fine_iscrizioni: v })} required />
+      <Input label="Orario" value={f.orario} onChange={(v) => setF({ ...f, orario: v })} />
+      <label className="text-[12px] font-medium text-muted-foreground">
+        Programma (una voce per riga)
+        <textarea
+          value={f.programma}
+          onChange={(e) => setF({ ...f, programma: e.target.value })}
+          rows={4}
+          className="mt-1 w-full rounded-[10px] border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+        />
+      </label>
+      <label className="text-[12px] font-medium text-muted-foreground">
+        Descrizione
+        <textarea
+          value={f.descrizione}
+          onChange={(e) => setF({ ...f, descrizione: e.target.value })}
+          rows={3}
+          className="mt-1 w-full rounded-[10px] border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+        />
+      </label>
+      {msg && <p className="text-[12px] text-destructive">{msg}</p>}
+      <div className="flex gap-3">
+        <button
+          type="submit"
+          disabled={salva.isPending}
+          className="rounded-[10px] bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+        >
+          {salva.isPending ? "Salvataggio…" : "Salva modifiche"}
+        </button>
+        <button type="button" onClick={onChiudi} className="text-[12px] text-muted-foreground hover:underline">
+          Annulla
+        </button>
+      </div>
+    </form>
   );
 }
 
@@ -431,6 +545,7 @@ function RigaEventoAdmin({
   const queryClient = useQueryClient();
   const { data: anteprima } = useLocandina(evento.locandina_path);
   const [msg, setMsg] = useState<string | null>(null);
+  const [modifica, setModifica] = useState(false);
 
   const carica = useMutation({
     mutationFn: async (file: File) => {
@@ -494,12 +609,20 @@ function RigaEventoAdmin({
         </label>
         <button
           type="button"
+          onClick={() => setModifica((v) => !v)}
+          className="text-[12px] font-medium hover:underline"
+        >
+          {modifica ? "Chiudi" : "Modifica"}
+        </button>
+        <button
+          type="button"
           onClick={onElimina}
           className="text-[12px] text-destructive hover:underline"
         >
           Elimina
         </button>
       </div>
+      {modifica && <ModificaEvento evento={evento} onChiudi={() => setModifica(false)} />}
     </div>
   );
 }

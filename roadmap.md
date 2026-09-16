@@ -16,3 +16,6 @@
 - [ ] Calendario con eventi reali FIGHT1 Lazio 2026/27 (rimuovere eventi inventati)
 - [x] Caricamento locandina per evento (admin) e visualizzazione pubblica
 - [ ] Locandina Fighting Spirit New Warriors in evidenza in homepage
+- [ ] Account admin reale + societa reale, verifica pagina Utenti e ruoli
+- [ ] Test iscrizione dalla pagina pubblica evento -> area riservata -> Le mie iscrizioni
+- [ ] Admin: gestione eventi completa (crea, modifica, elimina, locandina)
