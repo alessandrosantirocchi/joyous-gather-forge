@@ -545,6 +545,7 @@ function RigaEventoAdmin({
   const queryClient = useQueryClient();
   const { data: anteprima } = useLocandina(evento.locandina_path);
   const [msg, setMsg] = useState<string | null>(null);
+  const [modifica, setModifica] = useState(false);
 
   const carica = useMutation({
     mutationFn: async (file: File) => {
