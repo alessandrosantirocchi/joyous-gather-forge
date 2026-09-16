@@ -33,6 +33,15 @@ function AreaSocieta() {
     navigate({ to: "/", replace: true });
   }
 
+  if (!user) {
+    return (
+      <div className="mx-auto max-w-[1100px] px-5 py-16 text-sm text-muted-foreground">
+        Caricamento area riservata…
+      </div>
+    );
+  }
+
+
   return (
     <div className="mx-auto max-w-[1100px] px-5 py-10">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -87,11 +96,11 @@ function AreaSocieta() {
       </div>
 
       <div className="mt-6">
-        {tab === "atleti" && <MieiAtleti userId={user!.id} />}
-        {tab === "iscrizioni" && <MieIscrizioni userId={user!.id} />}
+        {tab === "atleti" && <MieiAtleti userId={user.id} />}
+        {tab === "iscrizioni" && <MieIscrizioni userId={user.id} />}
         {tab === "eventi" && admin && <GestioneEventi />}
         {tab === "conferme" && admin && <ConfermaIscrizioni />}
-        {tab === "utenti" && admin && <GestioneUtenti mioId={user!.id} />}
+        {tab === "utenti" && admin && <GestioneUtenti mioId={user.id} />}
       </div>
     </div>
   );
