@@ -820,7 +820,9 @@ function Select({
 
 function ConfermaIscrizioni() {
   const queryClient = useQueryClient();
-  const [eventoId, setEventoId] = useState<string>("");
+  const [eventoId, setEventoId] = useState<string>("tutti");
+  const [stato, setStato] = useState<string>("tutti");
+  const [cerca, setCerca] = useState("");
 
   const { data: eventi = [] } = useQuery({
     queryKey: ["eventi"],
@@ -834,19 +836,17 @@ function ConfermaIscrizioni() {
     },
   });
 
-  const eventoSelezionato = eventoId || (eventi[0] as any)?.id || "";
-
   const { data: iscrizioni = [], isLoading } = useQuery({
-    queryKey: ["iscrizioni-admin", eventoSelezionato],
-    enabled: Boolean(eventoSelezionato),
+    queryKey: ["iscrizioni-admin", eventoId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let q = supabase
         .from("iscrizioni")
         .select(
-          "id, stato, categoria_peso, disciplina, created_at, atleti(nome, cognome, nome_societa, peso_kg, disciplina)",
+          "id, stato, categoria_peso, disciplina, created_at, evento_id, atleti(nome, cognome, nome_societa, peso_kg, disciplina), eventi(nome, data_evento, luogo)",
         )
-        .eq("evento_id", eventoSelezionato)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: false });
+      if (eventoId !== "tutti") q = q.eq("evento_id", eventoId);
+      const { data, error } = await q;
       if (error) throw error;
       return data ?? [];
     },
@@ -854,51 +854,119 @@ function ConfermaIscrizioni() {
 
   const cambiaStato = useMutation({
     mutationFn: async ({ id, stato }: { id: string; stato: string }) => {
-      const { error } = await supabase
-        .from("iscrizioni")
-        .update({ stato })
-        .eq("id", id);
+      const { error } = await supabase.from("iscrizioni").update({ stato }).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["iscrizioni-admin"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["iscrizioni-admin"] });
+      queryClient.invalidateQueries({ queryKey: ["mie-iscrizioni"] });
+      queryClient.invalidateQueries({ queryKey: ["iscritti-evento"] });
+    },
+  });
+
+  const elimina = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("iscrizioni").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["iscrizioni-admin"] });
+      queryClient.invalidateQueries({ queryKey: ["mie-iscrizioni"] });
+      queryClient.invalidateQueries({ queryKey: ["iscritti-evento"] });
+    },
+  });
+
+  const testo = cerca.trim().toLowerCase();
+  const filtrate = (iscrizioni as any[]).filter((i) => {
+    if (stato !== "tutti" && i.stato !== stato) return false;
+    if (!testo) return true;
+    const blob = `${i.atleti?.nome ?? ""} ${i.atleti?.cognome ?? ""} ${
+      i.atleti?.nome_societa ?? ""
+    } ${i.eventi?.nome ?? ""}`.toLowerCase();
+    return blob.includes(testo);
   });
 
   const conteggi = {
-    totali: iscrizioni.length,
-    confermate: iscrizioni.filter((i: any) => i.stato === "confermata").length,
-    attesa: iscrizioni.filter((i: any) => i.stato === "in attesa").length,
+    totali: filtrate.length,
+    confermate: filtrate.filter((i) => i.stato === "confermata").length,
+    attesa: filtrate.filter((i) => i.stato === "in attesa").length,
+    respinte: filtrate.filter((i) => i.stato === "respinta").length,
   };
+
+  function esportaCsv() {
+    const righe = [
+      ["Evento", "Data", "Atleta", "Società", "Disciplina", "Peso", "Categoria", "Stato"],
+      ...filtrate.map((i) => [
+        i.eventi?.nome ?? "",
+        i.eventi?.data_evento ?? "",
+        `${i.atleti?.cognome ?? ""} ${i.atleti?.nome ?? ""}`.trim(),
+        i.atleti?.nome_societa ?? "",
+        i.disciplina || i.atleti?.disciplina || "",
+        i.atleti?.peso_kg ?? "",
+        i.categoria_peso ?? "",
+        i.stato,
+      ]),
+    ];
+    const csv = righe
+      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";"))
+      .join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "iscrizioni.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <div className="flex flex-col gap-5">
-      <Pannello className="flex flex-wrap items-end justify-between gap-4 p-5">
-        <div className="min-w-[260px] flex-1">
-          <Select
-            label="Evento"
-            value={eventoSelezionato}
-            onChange={setEventoId}
-            options={(eventi as any[]).map((e) => e.id)}
-            etichette={Object.fromEntries(
+      <Pannello className="grid gap-4 p-5 md:grid-cols-3">
+        <Select
+          label="Evento"
+          value={eventoId}
+          onChange={setEventoId}
+          options={["tutti", ...(eventi as any[]).map((e) => e.id)]}
+          etichette={{
+            tutti: "Tutti gli eventi",
+            ...Object.fromEntries(
               (eventi as any[]).map((e) => [
                 e.id,
                 `${e.nome} — ${formatDataBreve(e.data_evento)}`,
               ]),
-            )}
-          />
-        </div>
+            ),
+          }}
+        />
+        <Select
+          label="Stato"
+          value={stato}
+          onChange={setStato}
+          options={["tutti", "in attesa", "confermata", "respinta"]}
+          etichette={{ tutti: "Tutti gli stati" }}
+        />
+        <Input label="Cerca atleta, società o evento" value={cerca} onChange={setCerca} />
+      </Pannello>
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-[12px] text-muted-foreground">
           {conteggi.totali} iscrizioni · {conteggi.confermate} confermate ·{" "}
-          {conteggi.attesa} in attesa
+          {conteggi.attesa} in attesa · {conteggi.respinte} respinte
         </p>
-      </Pannello>
+        <button
+          type="button"
+          onClick={esportaCsv}
+          disabled={filtrate.length === 0}
+          className="rounded-[10px] border border-border px-3 py-1.5 text-[12px] font-medium hover:bg-muted disabled:opacity-50"
+        >
+          Esporta CSV
+        </button>
+      </div>
 
       <Pannello className="divide-y divide-border overflow-hidden">
         {isLoading && <Vuoto testo="Caricamento…" />}
-        {!isLoading && iscrizioni.length === 0 && (
-          <Vuoto testo="Nessuna iscrizione per questo evento." />
+        {!isLoading && filtrate.length === 0 && (
+          <Vuoto testo="Nessuna iscrizione con questi filtri." />
         )}
-        {(iscrizioni as any[]).map((i) => (
+        {filtrate.map((i) => (
           <div
             key={i.id}
             className="flex flex-wrap items-center justify-between gap-3 px-5 py-3"
@@ -908,12 +976,14 @@ function ConfermaIscrizioni() {
                 {i.atleti?.cognome} {i.atleti?.nome}
               </p>
               <p className="text-[12px] text-muted-foreground">
-                {i.atleti?.nome_societa} ·{" "}
-                {i.disciplina || i.atleti?.disciplina}
+                {i.atleti?.nome_societa} · {i.disciplina || i.atleti?.disciplina}
                 {i.atleti?.peso_kg ? ` · ${i.atleti.peso_kg} kg` : ""}
               </p>
+              <p className="text-[12px] text-muted-foreground">
+                {i.eventi?.nome} · {formatDataBreve(i.eventi?.data_evento)}
+              </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span
                 className={
                   i.stato === "confermata"
@@ -928,25 +998,41 @@ function ConfermaIscrizioni() {
               {i.stato !== "confermata" && (
                 <button
                   type="button"
-                  onClick={() =>
-                    cambiaStato.mutate({ id: i.id, stato: "confermata" })
-                  }
+                  onClick={() => cambiaStato.mutate({ id: i.id, stato: "confermata" })}
                   className="rounded-[10px] bg-primary px-3 py-1.5 text-[12px] font-semibold text-primary-foreground"
                 >
                   Conferma
                 </button>
               )}
+              {i.stato !== "in attesa" && (
+                <button
+                  type="button"
+                  onClick={() => cambiaStato.mutate({ id: i.id, stato: "in attesa" })}
+                  className="rounded-[10px] border border-border px-3 py-1.5 text-[12px] font-medium hover:bg-muted"
+                >
+                  In attesa
+                </button>
+              )}
               {i.stato !== "respinta" && (
                 <button
                   type="button"
-                  onClick={() =>
-                    cambiaStato.mutate({ id: i.id, stato: "respinta" })
-                  }
+                  onClick={() => cambiaStato.mutate({ id: i.id, stato: "respinta" })}
                   className="rounded-[10px] border border-border px-3 py-1.5 text-[12px] font-medium hover:bg-muted"
                 >
                   Respingi
                 </button>
               )}
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm("Eliminare definitivamente questa iscrizione?")) {
+                    elimina.mutate(i.id);
+                  }
+                }}
+                className="text-[12px] text-destructive hover:underline"
+              >
+                Elimina
+              </button>
             </div>
           </div>
         ))}
