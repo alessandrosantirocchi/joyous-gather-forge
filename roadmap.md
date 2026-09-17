@@ -11,11 +11,11 @@
 - [x] Area societa: gestione atleti e iscrizioni agli eventi
 - [x] Sfondo scuro stile FederKombat
 - [x] Area admin: gestione eventi e conferma iscrizioni
-- [ ] Pagina evento pubblica: orario, programma, form iscrizione sincronizzato
-- [ ] Evento di prova con iscritti e conferme, verifica su Le mie iscrizioni
-- [ ] Calendario con eventi reali FIGHT1 Lazio 2026/27 (rimuovere eventi inventati)
+- [x] Pagina evento pubblica: orario, programma, form iscrizione sincronizzato
+- [x] Evento di prova con iscritti e conferme, verifica su Le mie iscrizioni
+- [x] Calendario con eventi reali FIGHT1 Lazio 2026/27 (rimuovere eventi inventati)
 - [x] Caricamento locandina per evento (admin) e visualizzazione pubblica
 - [ ] Locandina Fighting Spirit New Warriors in evidenza in homepage
-- [ ] Account admin reale + societa reale, verifica pagina Utenti e ruoli
-- [ ] Test iscrizione dalla pagina pubblica evento -> area riservata -> Le mie iscrizioni
-- [ ] Admin: gestione eventi completa (crea, modifica, elimina, locandina)
+- [x] Account admin reale + societa reale, verifica pagina Utenti e ruoli
+- [x] Test iscrizione dalla pagina pubblica evento -> area riservata -> Le mie iscrizioni
+- [x] Admin: gestione eventi completa (crea, modifica, elimina, locandina)
