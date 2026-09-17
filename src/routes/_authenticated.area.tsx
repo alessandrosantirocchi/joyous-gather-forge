@@ -75,7 +75,7 @@ function AreaSocieta() {
           ...(admin
             ? ([
                 ["eventi", "Gestione eventi"],
-                ["conferme", "Conferma iscrizioni"],
+                ["conferme", "Tutte le iscrizioni"],
                 ["utenti", "Utenti e ruoli"],
               ] as const)
             : []),
